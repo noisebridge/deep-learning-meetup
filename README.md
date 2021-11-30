@@ -1,6 +1,8 @@
 # deep-learning-meetup
 Discussion and project code for the Deep Learning class
 
+Use the environment.yml file to install our environment from conda. Should include pytorch, tensorflow, openai-gym, as well as a lot of auxillary files for working with them (even the sartorius API).
+
 ## Project ideas (feel free to add more!)
 
 - Data pipeline tutorial with MNIST project (multiclass classification)
