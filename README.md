@@ -5,7 +5,12 @@ Use the environment.yml file to install our environment from conda. Should inclu
 
 ## Ongoing Projects
 
-- [Sartorius Kaggle competition](https://www.kaggle.com/c/sartorius-cell-instance-segmentation). There's currently a directory called *kaggle* that stores all the code. If you run `kaggle_demo.py`, and create a Tensorboard on the directory created under `runs/`, you'll find a chart detailing the training loss as well as images of the model run on the validation images.
+- [Sartorius Kaggle competition](https://www.kaggle.com/c/sartorius-cell-instance-segmentation). There's currently a directory named `kaggle/` that stores all the code. If you run `kaggle_demo.py`, and create a Tensorboard on the directory created under `runs/`, you'll find a chart detailing the training loss as well as images of the model run on the validation images.
+
+TODO: 
+- Get a more official validation loss by dividing the training dataset into training and validation. 
+- Convert the specific losses into the IOU score used in the competition. 
+- Come up with a way to augment the data so as to improve the validation score. 
 
 ## Project ideas (feel free to add more!)
 
