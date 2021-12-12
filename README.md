@@ -3,6 +3,10 @@ Discussion and project code for the Deep Learning class
 
 Use the environment.yml file to install our environment from conda. Should include pytorch, tensorflow, openai-gym, as well as a lot of auxillary files for working with them (even the sartorius API).
 
+## Ongoing Projects
+
+- [Sartorius Kaggle competition](https://www.kaggle.com/c/sartorius-cell-instance-segmentation). There's currently a directory called *kaggle* that stores all the code. If you run `kaggle_demo.py`, and create a Tensorboard on the directory created under `runs/`, you'll find a chart detailing the training loss as well as images of the model run on the validation images.
+
 ## Project ideas (feel free to add more!)
 
 - Data pipeline tutorial with MNIST project (multiclass classification)
