@@ -1,3 +1,4 @@
+from PIL import Image 
 from torch.utils.data import Dataset
 from torchvision.transforms import functional as F
 
@@ -142,7 +143,7 @@ class CellTestDataset(Dataset):
 
         if self.transforms is not None:
             image, _ = self.transforms(image=image, target=None)
-        return {'image': image, 'image_id': image_id}
+        return image, image_id
 
     def __len__(self):
         return len(self.image_ids)
@@ -235,3 +236,4 @@ class CellDataset(Dataset):
 
     def __len__(self):
         return len(self.image_info)
+
