@@ -1,6 +1,7 @@
-from PIL import Image 
+from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.transforms import functional as F
+from sklearn.model_selection import KFold
 
 import collections
 import numpy as np
@@ -26,12 +27,12 @@ MOMENTUM = 0.9
 LEARNING_RATE = 0.001
 WEIGHT_DECAY = 0.0005
 
-# Changes the confidence required for a pixel to be kept for a mask. 
+# Changes the confidence required for a pixel to be kept for a mask.
 # Only used 0.5 till now.
 MASK_THRESHOLD = 0.5
 
 # Normalize to resnet mean and std if True.
-NORMALIZE = False 
+NORMALIZE = False
 
 
 # Use a StepLR scheduler if True. Not tried yet.
@@ -99,15 +100,15 @@ class ToTensor:
     def __call__(self, image, target):
         image = F.to_tensor(image)
         return image, target
-    
+
 
 def get_transform(train):
     transforms = [ToTensor()]
     if NORMALIZE:
         transforms.append(Normalize())
-    
+
     # Data augmentation for train
-    if train: 
+    if train:
         transforms.append(HorizontalFlip(0.5))
         transforms.append(VerticalFlip(0.5))
 
@@ -237,3 +238,15 @@ class CellDataset(Dataset):
     def __len__(self):
         return len(self.image_info)
 
+class KFoldPyTorch:
+    def __init__(self, n_splits=5, shuffle=False):
+        self._kf = KFold(n_splits, shuffle=shuffle)
+
+    # Outputs the k-fold train-test split, with CellDataset as input
+    def splits_iterator(self, dataset):
+        # Creates an array so the split indices work properly
+        arr = np.zeros(len(dataset))
+        for i, (train_idx, test_idx) in enumerate(self._kf.split(arr)):
+            train_subsampler = torch.utils.data.SubsetRandomSampler(train_idx)
+            test_subsampler = torch.utils.data.SubsetRandomSampler(test_idx)
+            yield i, train_subsampler, test_subsampler
