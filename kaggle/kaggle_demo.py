@@ -78,8 +78,8 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
 
     dl_train = DataLoader(ds_train, batch_size=BATCH_SIZE, sampler=train_subsampler,
                           num_workers=2, collate_fn=lambda x: tuple(zip(*x)))
-    ds_test = CellTestDataset(TEST_PATH, transforms=get_transform(train=False))
-    dl_test = DataLoader(ds_train, batch_size=BATCH_SIZE, sampler=test_subsampler,
+    # ds_test = CellTestDataset(TEST_PATH, transforms=get_transform(train=False))
+    dl_test = DataLoader(ds_train, batch_size=1, sampler=test_subsampler,
                           num_workers=2, collate_fn=lambda x: tuple(zip(*x)))
 
 
@@ -112,6 +112,9 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
         model.eval()
         avg_iou = 0
         for batch_idx, (images, targets) in enumerate(dl_test, 1):
+            # Uncomment for memory snapshot.
+            # print("Memory summary:", torch.cuda.memory_summary())
+
             batches+=1
 
             # Predict
@@ -124,22 +127,20 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
                 target_masks.append(torch.minimum(torch.sum(image_masks, 0), torch.tensor(1)))
 
             with torch.no_grad():
-                preds = parallel_net(images)[0]
+                output = parallel_net(images)
+                preds = output[0]
+                all_preds_masks = []
+                for mask in preds['masks']:
+                    all_preds_masks.append(torch.maximum(torch.sum(mask, 0), torch.tensor(1)))
 
-            # all_preds_masks = []
-            # for mask in preds['masks']:
-            #     all_preds_masks.append(torch.maximum(torch.sum(mask, 0), torch.tensor(1)))
-
-            # # TODO: Condense the ious into a single score, make sure it looks about right
-            # total_iou = 0
-            # for target_mask, image_mask in zip(target_masks, all_preds_masks):
-            #     total_iou += compute_map_iou(image_mask, target_mask)
-            # avg_iou += total_iou.item()
-            # del total_iou
-            del images
-            del targets
-            print("IOU: ", avg_iou / batches)
-            print("Memory allocated", torch.cuda.memory_allocated())
+                # TODO: Condense the ious into a single score, make sure it looks about right
+                total_iou = 0
+                for target_mask, image_mask in zip(target_masks, all_preds_masks):
+                    total_iou += compute_map_iou(image_mask, target_mask)
+                avg_iou += total_iou.cpu().item()
+                print("IOU: ", avg_iou / batches)
+                print("Memory allocated", torch.cuda.memory_allocated()/torch.cuda.max_memory_allocated())
+                print("Memory allocated/reserved", torch.cuda.memory_allocated(), torch.cuda.memory_reserved())
 
 
 
