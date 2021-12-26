@@ -6,24 +6,23 @@
 # We only rely on Pytorch
 import os
 import time
-import cv2
 
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+# from sklearn.model_selection import train_test_split
 
 import torch
-import torchvision
+# import torchvision
 from torchvision.transforms import ToPILImage
 from torch.nn import DataParallel
 from torch.utils.data import DataLoader
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
+# from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+# from torchvision.models.detection.mask_rcnn import MaskRCNNPredictor
 from torch.utils.tensorboard import SummaryWriter
 
 from load_data import CellDataset, CellTestDataset, get_transform, KFoldPyTorch
-from get_model_fn import get_model, compute_map_iou
+from get_model_fn import get_model
+# from get_model_fn import compute_map_iou
+from mem_Debug import mem_readout
 #### ------------------------------------------------------------------------------------------------
 
 #### SETUP
@@ -58,7 +57,7 @@ NUM_EPOCHS = 8
 
 MIN_SCORE = 0.59
 
-# For the eval part in Tensorboard ============
+# For the eval part in Tensorboard ===========
 WIDTH = 704
 HEIGHT = 520
 
@@ -73,6 +72,8 @@ df_train = pd.read_csv(TRAIN_CSV, nrows=5000 if TEST else None)
 ds_train = CellDataset(TRAIN_PATH, df_train, resize=False, transforms=get_transform(train=True))
 
 for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_train):
+    mem_readout(1)
+
     if i > 0:
         break
 
@@ -103,8 +104,10 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
 
     for epoch in range(1, NUM_EPOCHS + 1):
         print(f"Starting epoch {epoch} of {NUM_EPOCHS}")
+        mem_readout(2)
 
         time_start = time.time()
+    
         loss_accum = 0.0
         loss_mask_accum = 0.0
         batches=0
@@ -146,7 +149,9 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
         avg_iou /= batches
         writer.add_scalar("IOU output", avg_iou, epoch)
 
+        mem_readout(3)
         model.train()
+        mem_readout(4)
 
         # TODO : Add a sample prediction in Tensorboard.
         # writer.add_graph(model, images)
@@ -161,6 +166,8 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
         loss_mask_accum = 0.0
 
         for batch_idx, (images, targets) in enumerate(dl_train, 1):
+
+            mem_readout(5)
 
             # Predict
             images = list(image.to(DEVICE) for image in images)
@@ -192,6 +199,7 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
             if batch_idx % 10 == 1:
                 mem_usage_fraction = torch.cuda.memory_allocated() / torch.cuda.max_memory_allocated()
                 print(f"    [Batch {batch_idx:3d} / {n_batches:3d}] Batch train loss: {loss.item():7.3f}. Mask-only loss: {loss_mask:7.3f} Memory usage: {mem_usage_fraction:2.3f}")
+                mem_readout()
 
         if USE_SCHEDULER:
             lr_scheduler.step()

@@ -8,7 +8,6 @@ import os
 import pandas as pd
 import torch
 
-
 INPUT_DIR = "/home/culteejen/development/kaggle-sartorius"
 TRAIN_CSV = os.path.join(INPUT_DIR, "sartorius-cell-instance-segmentation/train.csv")
 TRAIN_PATH = os.path.join(INPUT_DIR, "sartorius-cell-instance-segmentation/train")
