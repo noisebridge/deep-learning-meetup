@@ -22,7 +22,7 @@ from torch.utils.tensorboard import SummaryWriter
 from load_data import CellDataset, CellTestDataset, get_transform, KFoldPyTorch
 from get_model_fn import get_model
 # from get_model_fn import compute_map_iou
-from mem_Debug import mem_readout
+from mem_debug import mem_readout
 #### ------------------------------------------------------------------------------------------------
 
 #### SETUP
