@@ -21,7 +21,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from load_data import CellDataset, CellTestDataset, get_transform, KFoldPyTorch
 from get_model_fn import get_model
-# from get_model_fn import compute_map_iou
+from get_model_fn import compute_map_iou
 from mem_debug import mem_readout
 #### ------------------------------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
         mem_readout(2)
 
         time_start = time.time()
-    
+
         loss_accum = 0.0
         loss_mask_accum = 0.0
         batches=0
@@ -118,27 +118,34 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
             batches+=1
 
             # Predict
+            mem_readout(3)
             images = list(image.to(DEVICE) for image in images)
             targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
 
-            target_masks = []
-            for t in targets:
-                image_masks = t['masks']
-                target_masks.append(torch.minimum(torch.sum(image_masks, 0), torch.tensor(1)))
-
+            mem_readout(4)
             with torch.no_grad():
+                target_masks = []
+                for t in targets:
+                    image_masks = t['masks']
+                    target_masks.append(torch.minimum(torch.sum(image_masks, 0), torch.tensor(1)))
+                mem_readout(5)
+
                 preds = parallel_net(images)[0]
 
-            # all_preds_masks = []
-            # for mask in preds['masks']:
-            #     all_preds_masks.append(torch.maximum(torch.sum(mask, 0), torch.tensor(1)))
+            mem_readout(6)
+            all_preds_masks = []
+            for mask in preds['masks']:
+                all_preds_masks.append(torch.maximum(torch.sum(mask, 0), torch.tensor(1)))
 
-            # # TODO: Condense the ious into a single score, make sure it looks about right
-            # total_iou = 0
-            # for target_mask, image_mask in zip(target_masks, all_preds_masks):
-            #     total_iou += compute_map_iou(image_mask, target_mask)
-            # avg_iou += total_iou.item()
-            # del total_iou
+            # TODO: Condense the ious into a single score, make sure it looks about right
+            mem_readout(7)
+            total_iou = 0
+            for target_mask, image_mask in zip(target_masks, all_preds_masks):
+                total_iou += compute_map_iou(image_mask, target_mask)
+            mem_readout(8)
+            avg_iou += total_iou.item()
+            mem_readout(9)
+            del total_iou
             del images
             del targets
             print("IOU: ", avg_iou / batches)
