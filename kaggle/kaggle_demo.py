@@ -24,6 +24,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from load_data import CellDataset, CellTestDataset, get_transform, KFoldPyTorch
 from get_model_fn import get_model, compute_map_iou
+from iou import iou_map
 #### ------------------------------------------------------------------------------------------------
 
 #### SETUP
@@ -50,10 +51,10 @@ LEARNING_RATE = 0.001
 WEIGHT_DECAY = 0.0005
 
 # Use a StepLR scheduler if True. Not tried yet.
-USE_SCHEDULER = True
+USE_SCHEDULER = False
 
 # Amount of epochs
-NUM_EPOCHS = 8
+NUM_EPOCHS = 10
 
 
 MIN_SCORE = 0.59
@@ -97,7 +98,7 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=LEARNING_RATE, momentum=MOMENTUM, weight_decay=WEIGHT_DECAY)
 
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.1)
 
     n_batches = len(dl_train)
 
@@ -111,7 +112,13 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
 
         model.eval()
         avg_iou = 0
+        pred_masks = []
+        gt_masks = []
+        j=0
         for batch_idx, (images, targets) in enumerate(dl_test, 1):
+            if j > 2:
+                break
+
             # Uncomment for memory snapshot.
             # print("Memory summary:", torch.cuda.memory_summary())
 
@@ -119,28 +126,28 @@ for i, train_subsampler, test_subsampler in k_fold_pytorch.splits_iterator(ds_tr
 
             # Predict
             images = list(image.to(DEVICE) for image in images)
-            targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
-
-            target_masks = []
-            for t in targets:
-                image_masks = t['masks']
-                target_masks.append(torch.minimum(torch.sum(image_masks, 0), torch.tensor(1)))
+            gt_mask = np.concatenate([t['masks'] for t in targets])
+            most_likely = np.argmax(gt_mask, axis=0)
+            values = np.max(gt_mask, axis=0)
+            gt_mask_numbers = np.where(values >= 0, most_likely+1, np.zeros_like(most_likely))
+            gt_masks.append(gt_mask_numbers)
 
             with torch.no_grad():
-                output = parallel_net(images)
-                preds = output[0]
-                all_preds_masks = []
-                for mask in preds['masks']:
-                    all_preds_masks.append(torch.maximum(torch.sum(mask, 0), torch.tensor(1)))
+                # Parallel net outputs: boxes, labels, scores, masks
+                masks_tensor = parallel_net(images)[0]['masks']
+                masks = masks_tensor.cpu().detach().numpy()
+                masks_3d = np.squeeze(masks)
+                most_likely = np.argmax(masks_3d, axis=0)
+                values = np.max(masks_3d, axis=0)
+                masks_numbers = np.where(values >= MASK_THRESHOLD, most_likely+1, np.zeros_like(most_likely))
+                pred_masks.append(masks_numbers)
 
-                # TODO: Condense the ious into a single score, make sure it looks about right
-                total_iou = 0
-                for target_mask, image_mask in zip(target_masks, all_preds_masks):
-                    total_iou += compute_map_iou(image_mask, target_mask)
-                avg_iou += total_iou.cpu().item()
-                print("IOU: ", avg_iou / batches)
-                print("Memory allocated", torch.cuda.memory_allocated()/torch.cuda.max_memory_allocated())
-                print("Memory allocated/reserved", torch.cuda.memory_allocated(), torch.cuda.memory_reserved())
+
+
+        avg_iou = iou_map(gt_masks, pred_masks, verbose=1)
+        print("IOU: ", avg_iou)
+        print("Memory allocated", torch.cuda.memory_allocated()/torch.cuda.max_memory_allocated())
+        print("Memory allocated/reserved", torch.cuda.memory_allocated(), torch.cuda.memory_reserved())
 
 
 
