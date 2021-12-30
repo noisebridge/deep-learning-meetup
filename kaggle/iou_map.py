@@ -125,7 +125,7 @@ def iou_map(truths, preds, verbose=0):
     return np.mean(prec)
 
 def custom_maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_matched_idxs):     
-     """ 
+    """ 
     Original docstring:
     # type: (Tensor, List[Tensor], List[Tensor], List[Tensor], List[Tensor]) 
     Arguments: 
@@ -135,14 +135,14 @@ def custom_maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_match
   
     Return: 
         mask_loss (Tensor): scalar tensor containing the loss 
-     """
-     """
+    """
+    """
     New docstring:
     see https://github.com/pytorch/vision/issues/1882
     currently just printing out the inputs that are passed by default to the maskrcnn_loss function. 
-     """
+    """
 
-     print(f'''
+    print(f'''
 Initial inputs:
 shape of mask_logits: {mask_logits.shape}\n
 length of proposals: {len(proposals)}; shape of proposal: {proposals[0].shape}\n
