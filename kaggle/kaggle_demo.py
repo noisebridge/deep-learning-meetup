@@ -24,6 +24,11 @@ from torch.utils.tensorboard import SummaryWriter
 
 from load_data import CellDataset, CellTestDataset, get_transform, KFoldPyTorch
 from get_model_fn import get_model
+from iou_map import custom_maskrcnn_loss
+
+from torchvision.models.detection import roi_heads
+
+roi_heads.maskrcnn_loss = custom_maskrcnn_loss
 #### ------------------------------------------------------------------------------------------------
 
 #### SETUP

@@ -124,7 +124,7 @@ def iou_map(truths, preds, verbose=0):
 
     return np.mean(prec)
 
-def maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_matched_idxs):     
+def custom_maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_matched_idxs):     
      """ 
     Original docstring:
     # type: (Tensor, List[Tensor], List[Tensor], List[Tensor], List[Tensor]) 
