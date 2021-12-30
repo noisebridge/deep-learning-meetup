@@ -123,3 +123,28 @@ def iou_map(truths, preds, verbose=0):
         print("AP\t-\t-\t-\t{:1.3f}".format(np.mean(prec)))
 
     return np.mean(prec)
+
+def maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_matched_idxs):     
+     """ 
+    Original docstring:
+    # type: (Tensor, List[Tensor], List[Tensor], List[Tensor], List[Tensor]) 
+    Arguments: 
+        proposals (list[BoxList]) 
+        mask_logits (Tensor) 
+        targets (list[BoxList]) 
+  
+    Return: 
+        mask_loss (Tensor): scalar tensor containing the loss 
+     """
+     """
+    New docstring:
+    see https://github.com/pytorch/vision/issues/1882
+    currently just printing out the inputs that are passed by default to the maskrcnn_loss function. 
+     """
+     print(f'''
+     shape of mask_logits: {mask_logits.shape}\n
+     length of proposals: {len(proposals)}\nshape of proposal: {proposals[0].shape}\n
+     length of gt_masks: {len(gt_masks)}\nshape of gt_mask: {gt_masks[0].shape}\n
+     length of gt_labels: {len(gt_labels)}\nshape of gt_label: {gt_labels[0].shape}\n
+     length of mask_matched_idxs: {len(mask_matched_idxs)}\nshape of mask_matched_idx: {mask_matched_idxs[0].shape}\n
+     ''')
