@@ -2,6 +2,7 @@
 from https://www.kaggle.com/theoviel/competition-metric-map-iou
 """
 
+import torch
 import numpy as np
 from torchvision.ops import roi_align
 
