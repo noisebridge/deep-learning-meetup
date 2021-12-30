@@ -169,4 +169,6 @@ length of mask_matched_idxs: {len(mask_matched_idxs)}; shape of mask_matched_idx
     print(f'''
 Modified terms:
 length of labels: {len(labels)}; shape of label: {labels.shape}
-length of mask_targets: {len(mask_targets)}; shape of mask_target: {mask_targets.shape})    
+length of mask_targets: {len(mask_targets)}; shape of mask_target: {mask_targets.shape}
+    ''')
+      
