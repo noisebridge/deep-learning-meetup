@@ -141,10 +141,32 @@ def custom_maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_match
     see https://github.com/pytorch/vision/issues/1882
     currently just printing out the inputs that are passed by default to the maskrcnn_loss function. 
      """
+
      print(f'''
-     shape of mask_logits: {mask_logits.shape}\n
-     length of proposals: {len(proposals)}\nshape of proposal: {proposals[0].shape}\n
-     length of gt_masks: {len(gt_masks)}\nshape of gt_mask: {gt_masks[0].shape}\n
-     length of gt_labels: {len(gt_labels)}\nshape of gt_label: {gt_labels[0].shape}\n
-     length of mask_matched_idxs: {len(mask_matched_idxs)}\nshape of mask_matched_idx: {mask_matched_idxs[0].shape}\n
+Initial inputs:
+shape of mask_logits: {mask_logits.shape}\n
+length of proposals: {len(proposals)}; shape of proposal: {proposals[0].shape}\n
+length of gt_masks: {len(gt_masks)}; shape of gt_mask: {gt_masks[0].shape}\n
+length of gt_labels: {len(gt_labels)}; shape of gt_label: {gt_labels[0].shape}\n
+length of mask_matched_idxs: {len(mask_matched_idxs)}; shape of mask_matched_idx: {mask_matched_idxs[0].shape}\n
      ''')
+
+    discretization_size = mask_logits.shape[-1]
+    labels = [l[idxs] for l, idxs in zip(gt_labels, mask_matched_idxs)]
+    mask_targets = [
+        project_masks_on_boxes(m, p, i, discretization_size)
+        for m, p, i in zip(gt_masks, proposals, mask_matched_idxs)
+    ]
+
+    labels = torch.cat(labels, dim=0)
+    mask_targets = torch.cat(mask_targets, dim=0)
+
+    # torch.mean (in binary_cross_entropy_with_logits) doesn't
+    # accept empty tensors, so handle it separately
+    if mask_targets.numel() == 0:
+        return mask_logits.sum() * 0
+
+    print(f'''
+Modified terms:
+length of labels: {len(labels)}; shape of label: {labels.shape}
+length of mask_targets: {len(mask_targets)}; shape of mask_target: {mask_targets.shape})    
