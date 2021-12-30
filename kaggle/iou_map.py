@@ -3,6 +3,7 @@ from https://www.kaggle.com/theoviel/competition-metric-map-iou
 """
 
 import numpy as np
+from torchvision.ops import roi_align
 
 def rles_to_mask(encs, shape):
     """
@@ -124,6 +125,21 @@ def iou_map(truths, preds, verbose=0):
 
     return np.mean(prec)
 
+def project_masks_on_boxes(gt_masks, boxes, matched_idxs, M):
+    # type: (Tensor, Tensor, Tensor, int)
+    """
+    Given segmentation masks and the bounding boxes corresponding
+    to the location of the masks in the image, this function
+    crops and resizes the masks in the position defined by the
+    boxes. This prepares the masks for them to be fed to the
+    loss computation as the targets.
+    """
+    matched_idxs = matched_idxs.to(boxes)
+    rois = torch.cat([matched_idxs[:, None], boxes], dim=1)
+    gt_masks = gt_masks[:, None].to(rois)
+    return roi_align(gt_masks, rois, (M, M), 1.)[:, 0]
+
+
 def custom_maskrcnn_loss(mask_logits, proposals, gt_masks, gt_labels, mask_matched_idxs):     
     """ 
     Original docstring:
@@ -171,4 +187,3 @@ Modified terms:
 length of labels: {len(labels)}; shape of label: {labels.shape}
 length of mask_targets: {len(mask_targets)}; shape of mask_target: {mask_targets.shape}
     ''')
-      
