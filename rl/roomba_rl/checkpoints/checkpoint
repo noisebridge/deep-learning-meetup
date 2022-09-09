@@ -1,2 +1,0 @@
-model_checkpoint_path: "gamma_0.8_episodes_600_C_50_replay_10000"
-all_model_checkpoint_paths: "gamma_0.8_episodes_600_C_50_replay_10000"
