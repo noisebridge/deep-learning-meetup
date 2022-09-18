@@ -7,13 +7,6 @@ from particle import Pose, ParticleMap
 from sensor import Sensor
 import math
 
-try:
-    import pygame
-    from pygame import gfxdraw
-except ImportError:
-    raise DependencyNotInstalled(
-        "pygame is not installed, run `pip install gym[box2d]`"
-    )
 FPS=10
 SCALE = 30.0  # affects how fast-paced the game is, forces should be adjusted as well
 P_SCALE = 10.0
@@ -79,6 +72,7 @@ class RoombaEnv(gym.Env):
         self.screen: pygame.Surface = None
         self.clock = None
         self.terminated = False
+        self._state = None
         
         
     def step(self, action):
@@ -102,19 +96,31 @@ class RoombaEnv(gym.Env):
             reward = -1
         sensor_output = self._sensor.sense(self._roomba, self._particles)
         self._i += 1
-        return np.array(sensor_output, dtype=np.float32), reward, self.terminated, {}
+        self._state = np.array(sensor_output, dtype=np.float32)
+        return self._state, reward, self.terminated, {}
 
     # Need for the initial state
     def reset(self):
         self._init_states()
         self.terminated = False
         sensor_output = self._sensor.sense(self._roomba, self._particles)
-        return np.array(sensor_output, dtype=np.float32)
+        self._state = np.array(sensor_output, dtype=np.float32)
+        return self._state
 
+    @property
+    def state(self):
+        return self._state
         
 
     def render(self):
         if self.screen is None and self.render_mode == "human":
+            try:
+                import pygame
+                from pygame import gfxdraw
+            except ImportError:
+                raise DependencyNotInstalled(
+                    "pygame is not installed, run `pip install gym[box2d]`"
+                )
             pygame.init()
             pygame.display.init()
             self.screen = pygame.display.set_mode((VIEWPORT_W, VIEWPORT_H))
