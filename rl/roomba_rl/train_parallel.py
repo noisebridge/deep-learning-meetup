@@ -57,7 +57,12 @@ class Trainer:
             p.start()
         for p in self._processes:
             p.join()
-        print("")
+        batch_states = []
+        while not queue.empty():
+            process_output = queue.get()
+            batch_states += process_output
+            print(len(batch_states))
+        print(len(batch_states))
 
 
 
