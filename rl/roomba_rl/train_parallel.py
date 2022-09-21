@@ -46,7 +46,10 @@ class Trainer:
         self._manager = Manager()
         self._manager.list()
         self._envs = self._manager.list([env_factory() for i in range(n_processes)])
-
+        # TODO: Make this a setup param
+        self._n_batch_size = 512
+        self._batch_states = list()
+        self._current_index = 0
 
 
     def start_training_step(self, t):
@@ -57,12 +60,18 @@ class Trainer:
             p.start()
         for p in self._processes:
             p.join()
-        batch_states = []
+        process_outputs = []
         while not queue.empty():
             process_output = queue.get()
-            batch_states += process_output
-            print(len(batch_states))
-        print(len(batch_states))
+            process_outputs += process_output
+        
+        for state in process_outputs:
+            if len(self._batch_states) < self._n_batch_size:
+                self._batch_states.append(state)
+            else:
+                self._batch_states[self._current_index] = state
+            self._current_index = (self._current_index + 1) % self._n_batch_size
+        print(f"current index: {self._current_index}")
 
 
 
