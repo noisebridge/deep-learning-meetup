@@ -39,7 +39,7 @@ class GeneticAlgorithm:
 
     @_population.default
     def generate_population(self):
-        return self.rng.integers(self.n_gene_variants, size=(self.population_size, self.chromosone_length))
+        return self.rng.integers(self.n_gene_variants-1, size=(self.population_size, self.chromosone_length))
 
     @_fitness.default
     def compute_initial_fitness(self):
@@ -50,6 +50,8 @@ class GeneticAlgorithm:
 
 
     def selection(self, population, weights):
+        print("Fitness: ")
+        print(weights / weights.sum())
         return self.rng.choice(population, p=weights/weights.sum(), size=self.n_parents, axis=0)
     
     # Breed between two pairs of parents
@@ -62,9 +64,9 @@ class GeneticAlgorithm:
         return new_generation 
 
     def mutation(self, new_generation):
-        mutated_indices = self.rng.integers(self.population_size-1, size=(self.n_mutations,))         
-        mutated_gene_indices = self.rng.integers(self.chromosone_length-1, size=(self.n_mutations,))
-        mutated_values = self.rng.integers(self.n_gene_variants-1, size=(self.n_mutations,))
+        mutated_indices = self.rng.integers(self.population_size, size=(self.n_mutations,))         
+        mutated_gene_indices = self.rng.integers(self.chromosone_length, size=(self.n_mutations,))
+        mutated_values = self.rng.integers(self.n_gene_variants, size=(self.n_mutations,))
         new_generation[mutated_indices, mutated_gene_indices] = mutated_values
         
     def check_convergence(self):
@@ -72,8 +74,15 @@ class GeneticAlgorithm:
 
     def training_loop(self):
         parents = self.selection(self._population, self._fitness)
+        #print("Parents")
+        #print(parents)
         new_generation = self.crossover(parents)
+        #print("Spliced generation")
+        #print(new_generation)
+        nonmutated = np.copy(new_generation)
         self.mutation(new_generation)
+        #print("mutations")
+        #print(new_generation - nonmutated)
         fitness = self.compute_fitness(new_generation)
         self._population = new_generation
         self._iterations += 1
@@ -87,23 +96,24 @@ class GeneticAlgorithm:
     def train(self):
         while self.check_convergence():
             self._fitness = self.training_loop()
-        print("Final population")
-        print(self._population)
+            print("Final population")
+            print(self._population)
         print("Fitness")
         print(self._fitness)
         return self._fitness
 
 
 def random_fitness_function(population):
-    return np.sum(population, axis=1, keepdims=False)
+    return np.square(np.sum(population, axis=1, keepdims=False))
 
 if __name__ == "__main__":
     g = GeneticAlgorithm(
-            population_size=50, 
-            n_gene_variants=5, 
-            n_parents=10,
-            n_mutations=10,
-            chromosone_length=6, 
+            population_size=20, 
+            max_iterations=500,
+            n_gene_variants=10, 
+            n_parents=5,
+            n_mutations=5,
+            chromosone_length=2, 
             fitness_fn=random_fitness_function)
     print(random_fitness_function(np.array([[1,2,3,4]])))
     g.train()
