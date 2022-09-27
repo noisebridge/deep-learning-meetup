@@ -50,21 +50,21 @@ class GeneticAlgorithm:
 
 
     def selection(self, population, weights):
-        return self.rng.choice(population, p=weights/weights.sum(), size=self.n_parents, axis=1)
+        return self.rng.choice(population, p=weights/weights.sum(), size=self.n_parents, axis=0)
     
     # Breed between two pairs of parents
     def crossover(self, parents):
-        new_generation = np.zeros_like([self.n_parents, population.shape[1]])
-        left_indices = np.shuffle(np.arange(self.n_parents))
-        right_indices = np.shuffle(np.arange(self.n_parents))
+        new_generation = np.zeros([self.population_size, parents.shape[1]])
+        left_indices = self.rng.integers(self.n_parents, size=(self.population_size,))
+        right_indices = self.rng.integers(self.n_parents, size=(self.population_size,))
         new_generation[:, :self.crossover_point] = parents[left_indices, :self.crossover_point]
         new_generation[:, self.crossover_point:] = parents[right_indices, self.crossover_point:]
         return new_generation 
 
     def mutation(self, new_generation):
-        mutated_indices = self.rng.integers(self.population_size, size=(self.n_mutations,))         
-        mutated_gene_indices = self.rng.integers(self.chromosone_length, size=(self.n_mutations,))
-        mutated_values = self.rng.integers(self.n_gene_variants, size=(self.n_mutations,))
+        mutated_indices = self.rng.integers(self.population_size-1, size=(self.n_mutations,))         
+        mutated_gene_indices = self.rng.integers(self.chromosone_length-1, size=(self.n_mutations,))
+        mutated_values = self.rng.integers(self.n_gene_variants-1, size=(self.n_mutations,))
         new_generation[mutated_indices, mutated_gene_indices] = mutated_values
         
     def check_convergence(self):
@@ -87,10 +87,15 @@ class GeneticAlgorithm:
     def train(self):
         while self.check_convergence():
             self._fitness = self.training_loop()
+        print("Final population")
+        print(self._population)
+        print("Fitness")
+        print(self._fitness)
+        return self._fitness
 
 
 def random_fitness_function(population):
-    return np.array(sum(np.array(population) < i) for i in population)
+    return np.sum(population, axis=1, keepdims=False)
 
 if __name__ == "__main__":
     g = GeneticAlgorithm(
@@ -100,5 +105,5 @@ if __name__ == "__main__":
             n_mutations=10,
             chromosone_length=6, 
             fitness_fn=random_fitness_function)
-    print(random_fitness_function(np.array([1,2,3,4])))
+    print(random_fitness_function(np.array([[1,2,3,4]])))
     g.train()
