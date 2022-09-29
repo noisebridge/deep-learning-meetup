@@ -50,8 +50,6 @@ class GeneticAlgorithm:
 
 
     def selection(self, population, weights):
-        print("Fitness: ")
-        print(weights / weights.sum())
         return self.rng.choice(population, p=weights/weights.sum(), size=self.n_parents, axis=0)
     
     # Breed between two pairs of parents
@@ -72,7 +70,7 @@ class GeneticAlgorithm:
     def check_convergence(self):
         return self._iterations < self.max_iterations
 
-    def training_loop(self):
+    def training_loop(self, add_mutations=True):
         parents = self.selection(self._population, self._fitness)
         #print("Parents")
         #print(parents)
@@ -80,7 +78,8 @@ class GeneticAlgorithm:
         #print("Spliced generation")
         #print(new_generation)
         nonmutated = np.copy(new_generation)
-        self.mutation(new_generation)
+        if add_mutations:
+            self.mutation(new_generation)
         #print("mutations")
         #print(new_generation - nonmutated)
         fitness = self.compute_fitness(new_generation)
@@ -93,27 +92,49 @@ class GeneticAlgorithm:
         self._fitness = self.compute_fitness(self._population)
         self._iterations = 0
 
+
+    def represent(self, population):
+        print("Population:")
+        population_ints = population.astype(int)
+        print(population_ints)
+        for chromosone in population_ints:
+            word = str([chr(i) for i in chromosone])
+            print(word)
+
     def train(self):
         while self.check_convergence():
             self._fitness = self.training_loop()
-            print("Final population")
-            print(self._population)
+            self.represent(self._population)
+        self.training_loop(add_mutations=False)
         print("Fitness")
         print(self._fitness)
+        print("Final population")
+        self.represent(self._population)
         return self._fitness
 
 
 def random_fitness_function(population):
     return np.square(np.sum(population, axis=1, keepdims=False))
 
+
+# Make sure the word is as close to "Be Excellent" as possible
+expected_string = "Be Excellent"
+expected_string_as_int_array = np.array([ord(c) for c in expected_string])
+eps=1e-3
+def excellent_fitness_function(population):
+    return 1/((np.sum(np.square(population - expected_string_as_int_array), axis=1))+eps)
+
+
 if __name__ == "__main__":
     g = GeneticAlgorithm(
             population_size=20, 
-            max_iterations=500,
-            n_gene_variants=10, 
-            n_parents=5,
-            n_mutations=5,
-            chromosone_length=2, 
-            fitness_fn=random_fitness_function)
-    print(random_fitness_function(np.array([[1,2,3,4]])))
+            max_iterations=10000,
+            n_gene_variants=256, 
+            n_parents=15,
+            n_mutations=15,
+            chromosone_length=12, 
+            fitness_fn=excellent_fitness_function)
+
     g.train()
+    print("Expected:")
+    print(expected_string_as_int_array)
