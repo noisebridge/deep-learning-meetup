@@ -8,7 +8,7 @@ except ImportError:
     from yaml import Loader, Dumper
 
 
-def gather_dirs(directory):
+def gather_data(directory):
     raw_labels=[label for label in os.listdir(directory)]
     imgs = {label: [] for label in raw_labels}
     for label in raw_labels:
@@ -45,6 +45,6 @@ class LabelMapping:
 
 
 if __name__ == "__main__":
-    imgs, raw_labels = gather_dirs("data")
+    imgs, raw_labels = gather_data("data")
     mapper = LabelMapping("mappings.yaml", raw_labels)
     print(mapper.output_labels)

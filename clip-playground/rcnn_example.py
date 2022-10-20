@@ -16,7 +16,7 @@ model.eval()
 x = [torch.rand(3, 300, 400), torch.rand(3, 500, 400)]
 print(x[0].shape)
 predictions = model(image_list)
-analyze_i = 3
+analyze_i = 0
 imgi_bboxes = predictions[analyze_i]['boxes'].detach().numpy()
 imgi = image_list[analyze_i].numpy().transpose([1, 2, 0])
 print(imgi.shape)
