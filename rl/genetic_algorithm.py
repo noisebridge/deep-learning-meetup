@@ -6,7 +6,7 @@ from functools import partial
 @define
 class GeneticAlgorithm:
     '''
-        Genetic Algorithm
+        # Genetic Algorithm
 
         Creates a population of size `population_size`, where each individual is 
         a segment of `chromosone_length` numbers, where the numbers range from 0 to `n_gene_variants`.
@@ -14,7 +14,24 @@ class GeneticAlgorithm:
         Fitness is determined by passing in the function `fitness_fn`, which will take in the entire population 
         and compute the fitness of the current population.
 
-    
+
+        ## Idea
+
+        - Agent can be formatted as a chromosome
+        - Create a population of chromosomes (usually a finite set of discrete values)
+        - Each chromosome passes on “genes” to future generations
+
+        ## Components
+        
+        - Score through fitness function
+            - Fitness functions usually do minimization, I do maximization for resample simplicity
+        - Sample
+            - Get top n results, set as the parents for the next generation
+            - Sometimes there’s an “elite” k which proceeds to child generation
+        - Crossover
+            - each child gets half of one of the parents’ chromosome
+        - Mutation
+            - Randomly change a gene in the chromosome    
     '''
     population_size : int
     n_gene_variants : int
@@ -79,8 +96,8 @@ class GeneticAlgorithm:
         CONVERGENCE_THRESHOLD = 1e-6
         normalized_history = self._fitness_history / np.sum(self._fitness_history)
         fitness_diff = np.sqrt(np.max(np.square(normalized_history[1:] - normalized_history[:-1])))
-        print(self._fitness_history)
-        print(fitness_diff)
+        #print(self._fitness_history)
+        #print(fitness_diff)
         return (
                 self._iterations > self.min_iterations and fitness_diff < CONVERGENCE_THRESHOLD 
         )    or self._iterations >= self.max_iterations
@@ -118,9 +135,9 @@ class GeneticAlgorithm:
 
 
     def represent(self, population):
-        print("Population:")
+        #print("Population:")
         population_ints = population.astype(int)
-        print(population_ints)
+        #print(population_ints)
         for chromosone in population_ints:
             word = str([chr(i) for i in chromosone])
             print(word)
