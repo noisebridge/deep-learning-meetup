@@ -1,5 +1,5 @@
 
-# Methodology
+# Methodology (Part I)
 
 ## Perceptual Image Compression
 
@@ -21,7 +21,7 @@ Preserves image likeness while punishing blurring
 
 - aka learning reverse process of [Markov chain](https://brilliant.org/wiki/markov-chains/#:~:text=A%20Markov%20chain%20is%20a,possible%20future%20states%20are%20fixed.)
 
-- In image processing, use variational lower bound (?) like denoising score-matching (?)
+- In image processing, use [variational lower bound](https://xyang35.github.io/2017/04/14/variational-lower-bound/) in a way similar to [denoising score-matching](https://arxiv.org/pdf/2011.13456.pdf)
 
 
 ### Generative Modeling of Latent Representations
@@ -39,9 +39,16 @@ Preserves image likeness while punishing blurring
 
 - Basically, the UNet has attention in its layers. Specifically, cross-attention, because the input of image latent space and CLIP text encoding space is different
 
-- Transformer background (?)
+### [Attention background](https://arxiv.org/pdf/1706.03762.pdf)
 
-- The Q value is the input from the latent space of image
+- 3 separate values : query Q, key K, value V
+
+- Translate approximately to looking up a query Q through a set of keys K, and tranforming it into value space V 
+
+
+In this case, the following are assigned to Q, K, and V:
+
+- Q value is the input from the latent space of image
 
 - K and V are derived from the CLIP text encoding
 
@@ -49,23 +56,37 @@ Preserves image likeness while punishing blurring
 
 ## Moving to Latent Space
 
-- Perceptual Compression : Fewer pixels, but same image
+### Perceptual Compression 
 
-AutoEncoder + GAN
+- Fewer pixels, but same image
 
-- Semantic Compression : Image details lost, but same idea 
+- AutoEncoder + GAN
 
-Latent Diffusion Model
+### Semantic Compression 
+
+- Image details lost, but same idea 
+
+- Latent Diffusion Model
 
 
-## Overview of architectures
+# Implementation (Part II)
+
+## Overview 
 
 ![diagram](diagram.jpeg)
 
-- UNet?
+## Core network details
+
+- UNet -> 3 conv + deconv layers each
 - CLIP ViT-L/14 Text encoder
+- 4.5B Parameters for text-to-image synthesis
 
-## Data
+## Data used 
 
-- LAION database
-- 
+- 256x256 images ; not all of images in these datasets are 256x256, but were scaled up to fit the network
+- CelebA dataset
+- FFHQ (Flickr-Faces)
+- LSUN Churches/Bedrooms 
+
+- text-to-image: LAION 400m database
+-
