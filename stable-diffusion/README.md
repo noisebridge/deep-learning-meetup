@@ -1,15 +1,28 @@
 
 # Methodology (Part I)
 
-## Perceptual Image Compression
 
-- Autoencoder
+## Moving to Latent Space
+
+*Goal*: Move to a *"perceptually equivalent, but computationally more suitable space"*, i.e.: Preserve only relevant details to the image
+
+### Perceptual Compression 
+
+*Goal*: Preserve image likeness while punishing blurring
 
 - Loss function : Perceptual loss + Patch-based adversarial objective
 
-Preserves image likeness while punishing blurring
+- NOTE: we want to avoid high-variance latent space, so KL regularization + VQ regularization (aka vector quantization in the decoder)
 
-- Avoid high-variance latent space, so KL regularization + VQ regularization (aka vector quantization in the decoder)
+- Implemented through *AutoEncoder + GAN*
+
+### Semantic Compression 
+
+*Goal*: "[learn] the semantic and conceptual composition of the data"
+
+- Image details lost, but same idea 
+
+- Implemented through *Latent Diffusion Model*
 
 
 ## Latent Diffusion Models
@@ -53,20 +66,6 @@ In this case, the following are assigned to Q, K, and V:
 - K and V are derived from the CLIP text encoding
 
 
-
-## Moving to Latent Space
-
-### Perceptual Compression 
-
-- Fewer pixels, but same image
-
-- AutoEncoder + GAN
-
-### Semantic Compression 
-
-- Image details lost, but same idea 
-
-- Latent Diffusion Model
 
 
 # Implementation (Part II)
