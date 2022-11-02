@@ -42,9 +42,12 @@
 - Cut away the fluff in image space to work with the core latent space (better for distributive modeling)
 
 
-- Originally, it ran an attention model purely in the latent space
+- Originally, with ex. [ViT-VQGAN](https://arxiv.org/pdf/2110.04627.pdf), people ran an attention/autoregressive model purely in the latent space
 
-- However, with generative modeling/diffusion models, can take advantage of "inductive biases"
+However, with generative modeling/diffusion models, can take advantage of "inductive biases". From [Wikipedia](https://en.wikipedia.org/wiki/Inductive_bias):
+- The inductive bias (also known as learning bias) of a learning algorithm is the set of assumptions that the learner uses to predict outputs of given inputs that it has not encountered.[1]
+
+
 
 - Loss is calculated by the expectation of the difference between the original layer output and the denoised decoder output at timestep t.
 
@@ -88,4 +91,7 @@ In this case, the following are assigned to Q, K, and V:
 - LSUN Churches/Bedrooms 
 
 - text-to-image: LAION 400m database
--
+
+## Loss functions
+
+- [Frechet Inception Distance (FID)](https://en.wikipedia.org/wiki/Fr%C3%A9chet_inception_distance)
