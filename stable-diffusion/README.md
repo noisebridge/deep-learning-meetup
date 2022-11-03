@@ -1,7 +1,6 @@
 
 # Methodology (Part I)
 
-
 ## Moving to Latent Space
 
 *Goal*: Move to a *"perceptually equivalent, but computationally more suitable space"*, i.e.: Preserve only relevant details to the image
@@ -24,29 +23,38 @@
 
 - Implemented through *Latent Diffusion Model*
 
+### Decoder
+
+Either trained with KL divergence, or vector-quantized from z and decoded
 
 ## Latent Diffusion Models
 
-### Diffusion models 
+### [Diffusion models](https://arxiv.org/abs/1503.03585)
 
 
-- learn distribution through gradual denoising of a normal distribution
+In short : Add Gaussian noise in a series of steps, then try and denoise the image step by step
 
-- aka learning reverse process of [Markov chain](https://brilliant.org/wiki/markov-chains/#:~:text=A%20Markov%20chain%20is%20a,possible%20future%20states%20are%20fixed.)
+Original research done through Stochastic Differential Equations and finding a gradient with respect to the noise element
+
+Generally abstracted away through autoencoders like UNet
+
+Proved to be superior to GANs at image generation for about a year before the Latent Diffusion Model came out
+
+- Compared to learning reverse process of [Markov chain](https://brilliant.org/wiki/markov-chains/#:~:text=A%20Markov%20chain%20is%20a,possible%20future%20states%20are%20fixed.)
 
 - In image processing, use [variational lower bound](https://xyang35.github.io/2017/04/14/variational-lower-bound/) in a way similar to [denoising score-matching](https://arxiv.org/pdf/2011.13456.pdf)
 
 
 ### Generative Modeling of Latent Representations
 
-- Cut away the fluff in image space to work with the core latent space (better for distributive modeling)
+- Cut away the fluff in image space to work with the core latent space (better for distributive modeling, *more efficient*)
 
+- Can formulate as the expectation over the set of t in {0,...,T} + Gaussian noise variable of the L2 difference between the noise value and the output of UNet
 
 - Originally, with ex. [ViT-VQGAN](https://arxiv.org/pdf/2110.04627.pdf), people ran an attention/autoregressive model purely in the latent space
 
-However, with generative modeling/diffusion models, can take advantage of "inductive biases". From [Wikipedia](https://en.wikipedia.org/wiki/Inductive_bias):
-- The inductive bias (also known as learning bias) of a learning algorithm is the set of assumptions that the learner uses to predict outputs of given inputs that it has not encountered.[1]
-
+- However, with generative modeling/diffusion models, can take advantage of "inductive biases". From [Wikipedia](https://en.wikipedia.org/wiki/Inductive_bias):
+    - The inductive bias (also known as learning bias) of a learning algorithm is the set of assumptions that the learner uses to predict outputs of given inputs that it has not encountered.[1]
 
 
 - Loss is calculated by the expectation of the difference between the original layer output and the denoised decoder output at timestep t.
@@ -54,6 +62,8 @@ However, with generative modeling/diffusion models, can take advantage of "induc
 ## Conditioning Mechanism
 
 - Basically, the UNet has attention in its layers. Specifically, cross-attention, because the input of image latent space and CLIP text encoding space is different
+
+- Key input is encoded via a domain-specific encoder, labeled `tau_theta` (I can't latex). This converts the wide variety of text/image query types into something that can be fed into the cross-attention model.
 
 ### [Attention background](https://arxiv.org/pdf/1706.03762.pdf)
 
